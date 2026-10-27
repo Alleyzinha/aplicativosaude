@@ -1,36 +1,49 @@
 # Aplicativo Saúde
 
-## Executar
+Aplicativo Expo/React Native com API REST em Node.js/Express e persistência MySQL.
 
-Use Node.js 22.13 ou superior compatível com o Expo SDK 57.
+## Arquitetura
+
+1. **Frontend:** Expo/React Native em `src/`; telas chamam a API por `src/services/api.js`.
+2. **Backend:** Express em `server/src/`; valida os dados, autentica usuários e acessa o banco.
+3. **Dados:** MySQL; o esquema inicial cria a tabela `users` com e-mail único e senha armazenada como hash.
+
+O cadastro e o login usam `POST /api/auth/register` e `POST /api/auth/login`. O token JWT fica no armazenamento local do app (AsyncStorage); senhas em texto puro não são armazenadas. A lista de frutas usa `GET /api/fruits`; a API inclui um catálogo local de 49 frutas em `server/data/fruits.json` como fallback quando Fruityvice está indisponível.
+
+Os dados de acompanhamento de saúde ainda são mantidos localmente pelo app. O banco e a API implementam o cadastro de usuários previsto na arquitetura; sincronizar os históricos de saúde exigiria tabelas e rotas adicionais.
+
+## Preparar o MySQL e a API
+
+Use MySQL (por exemplo, XAMPP) na porta `3307` ou ajuste `DB_PORT`. Execute `server/schema.sql` no MySQL para criar o banco e a tabela. Depois:
+
+```sh
+cd server
+npm install
+```
+
+Copie `server/.env.example` para `server/.env`, defina uma chave `JWT_SECRET` aleatória com pelo menos 32 caracteres e informe as credenciais do MySQL. Inicie a API na raiz do projeto com `npm run api` (ou `npm run api:dev` durante o desenvolvimento). A verificação `GET http://localhost:3000/api/health` informa se o banco está conectado.
+
+## Preparar o app
 
 ```sh
 npm ci
 npm start
 ```
 
-Para navegador: `npm run web`. Para Android: `npm run android`.
+Para navegador, use `npm run web`. Para acessar a API em dispositivo físico, crie `.env` na raiz com `EXPO_PUBLIC_API_URL=http://IP_DO_COMPUTADOR:3000` (o celular e o computador precisam estar na mesma rede). No emulador Android, use `http://10.0.2.2:3000`; no navegador local, o padrão `http://localhost:3000` funciona.
 
-## Onde editar
+## Organização do app
 
 | O que alterar | Local |
 | --- | --- |
 | Composição das telas | `src/screens/` |
-| Meta, consumo e histórico de água | `src/hooks/useWaterTracker.js` |
-| Estado, validação e cálculo de IMC | `src/hooks/useBmiCalculator.js` |
-| Cadastro, exclusão e fotos de remédios | `src/hooks/useMedicines.js` |
-| Seções visuais de água | `src/components/water/` |
-| Seções visuais de IMC | `src/components/bmi/` |
-| Campos, botões e componentes de remédios | `src/components/` |
-| Cartões da tela inicial | `src/constants/healthItems.js` |
-| Cores | `src/constants/theme.js` |
-| Meta inicial e quantidades rápidas | `src/constants/water.js` |
-| Categorias de IMC | `src/constants/imcCategories.js` |
-| Funções auxiliares | `src/utils/` |
+| Comunicação com a API | `src/services/api.js` |
 | Navegação | `src/navigation/AppNavigator.js` |
+| Estado e persistência local | `src/hooks/` e `src/context/` |
+| Componentes reutilizáveis | `src/components/` |
+| Regras e funções auxiliares | `src/utils/` |
+| Rotas e conexão MySQL | `server/src/` |
+| Catálogo local de frutas | `server/data/fruits.json` |
+| Esquema do banco | `server/schema.sql` |
 
-As telas conectam os hooks aos componentes. Os hooks guardam o estado e as ações. Os componentes recebem valores e callbacks por props e mantêm seus estilos no próprio arquivo.
-
-Os registros continuam apenas na memória, sem persistência após reiniciar o aplicativo.
-
-Documentação: https://docs.expo.dev/versions/v57.0.0/
+Documentação do Expo: https://docs.expo.dev/versions/v57.0.0/

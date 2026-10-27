@@ -5,12 +5,14 @@ import AuthTextField from '../components/auth/AuthTextField';
 import AuthPrimaryButton from '../components/auth/AuthPrimaryButton';
 import { authStyles as styles } from '../components/auth/authStyles';
 import { useProfile } from '../context/ProfileContext';
+import { authenticate } from '../services/api';
 
 export default function RegisterScreen({ navigation }) {
- const [name,setName]=useState('');const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [confirmPassword,setConfirmPassword]=useState('');const [error,setError]=useState('');
+ const [name,setName]=useState('');const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [confirmPassword,setConfirmPassword]=useState('');const [error,setError]=useState('');const [loading,setLoading]=useState(false);
  const [age,setAge]=useState('');const [weight,setWeight]=useState('');const [height,setHeight]=useState('');const [bloodType,setBloodType]=useState('');
  const { updateProfile } = useProfile();
- const createAccount=()=>{
+ const createAccount=async()=>{
+  if(loading)return;
   if(!name.trim()){setError('Informe seu nome.');return}
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())){setError('Informe um e-mail válido.');return}
   if(password.length<6){setError('A senha deve ter pelo menos 6 caracteres.');return}
@@ -20,8 +22,12 @@ export default function RegisterScreen({ navigation }) {
   const heightNumber=height?Number(height.replace(',','.')):null;
   if(weight&&( !Number.isFinite(weightNumber)||weightNumber<=0||weightNumber>500)){setError('Informe um peso válido em quilogramas.');return}
   if(height&&(!Number.isFinite(heightNumber)||heightNumber<40||heightNumber>250)){setError('Informe uma altura válida em centímetros.');return}
-  updateProfile({name:name.trim(),email:email.trim(),age,bloodType,weight:weightNumber,height:heightNumber});
-  setError('');navigation.navigate('Login',{registeredEmail:email.trim()});
+  setError('');setLoading(true);
+  try {
+   const user=await authenticate('register',{name:name.trim(),email:email.trim(),password,age:age||null,bloodType:bloodType||null,weight:weightNumber,height:heightNumber});
+   updateProfile(user);navigation.navigate('Login',{registeredEmail:user.email});
+  } catch (requestError) { setError(requestError.message); }
+  finally { setLoading(false); }
  };
  return <AuthScreenShell title="Criar cadastro" subtitle="Preencha seus dados para acessar o aplicativo." onBack={()=>navigation.goBack()} footer={<View style={styles.footer}><Text style={styles.footerText}>Já tem uma conta?</Text><Pressable onPress={()=>navigation.navigate('Login')}><Text style={styles.footerLink}> Entrar</Text></Pressable></View>}>
   <AuthTextField label="Nome completo" value={name} onChangeText={setName} placeholder="Como podemos chamar você?" autoCapitalize="words" autoComplete="name" />
@@ -37,7 +43,7 @@ export default function RegisterScreen({ navigation }) {
   <AuthTextField label="Senha" value={password} onChangeText={setPassword} placeholder="Mínimo de 6 caracteres" secure autoComplete="new-password" />
   <AuthTextField label="Confirmar senha" value={confirmPassword} onChangeText={setConfirmPassword} placeholder="Digite a senha novamente" secure autoComplete="new-password" />
   {error?<Text accessibilityRole="alert" style={styles.error}>{error}</Text>:null}
-  <AuthPrimaryButton label="Criar conta" onPress={createAccount} />
+  <AuthPrimaryButton label="Criar conta" onPress={createAccount} loading={loading} />
  </AuthScreenShell>;
 }
 

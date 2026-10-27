@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { apiRequest } from '../services/api';
 
 const STORAGE_KEY = '@saude/nutrition/v1';
-const FRUITYVICE_ALL = 'https://www.fruityvice.com/api/fruit/all';
 const NUTRIENTS = ['calories', 'carbohydrates', 'protein', 'fat', 'sugar'];
 const EMPTY_DATA = { catalog: [], favorites: [], entries: [] };
 
@@ -93,10 +91,9 @@ export default function useNutritionData() {
     setApiLoading(true);
     setApiError('');
     try {
-      const url = Platform.OS === 'web' ? '/api/fruits' : FRUITYVICE_ALL;
-      const response = await axios.get(url, { timeout: 15000, headers: { Accept: 'application/json' } });
-      if (!Array.isArray(response.data)) throw new Error('Resposta de frutas inválida');
-      const catalog = response.data.map(normalizeFruit).filter(Boolean);
+      const response = await apiRequest('/api/fruits');
+      if (!Array.isArray(response)) throw new Error('Resposta de frutas inválida');
+      const catalog = response.map(normalizeFruit).filter(Boolean);
       if (!catalog.length) throw new Error('A lista de frutas veio vazia');
       setData((current) => ({ ...current, catalog }));
       setUpdatedAt(new Date());
