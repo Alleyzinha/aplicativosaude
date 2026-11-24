@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "AplicativoSaude",
+    "slug": "AplicativoSaude",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita que o AplicativoSaude acesse suas fotos para escolher a foto de perfil ou cadastrar a imagem do rem?dio.",
+          "cameraPermission": "Permita que o AplicativoSaude use a câmera para fotografar o remédio.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Permita que o AplicativoSaude use sua localização para encontrar unidades próximas."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
